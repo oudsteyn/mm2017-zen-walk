@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Zen Walk</title>
+
+    <link rel="stylesheet" href="css/app.css">
+  </head>
+  <body>
+    <div id="floating-panel">
+    Mode:
+    <select id="travelMode">
+      <option value="WALKING">Walking</option>
+      <option value="BICYCLING">Bicycling</option>
+      <option value="TRANSIT">Transit</option>
+      <option value="DRIVING">Driving</option>
+    </select>
+    <br>
+    Start:
+    <select id="start">
+      <option value="Sir Francis Drake Hotel, Powell Street, San Francisco, CA">Sir Francis Drake Hotel</option>
+      <option value="Villa Florence Hotel, Powell Street, San Francisco, CA">Villa Florence Hotel</option>
+    </select>
+    <br>
+    End:
+    <select id="end">
+      <option value="Moscone West, Howard Street, San Francisco, CA">Moscone West</option>
+    </select>
+    <br><br>
+    <span id="duration" class="summary-title"></span> <span id="distance" class="summary-subtitle"></span>
+    <br>
+    <span id="summary" class="summary-description"></span>
+    </div>
+    <div id="map"></div>
+    <script>
+      function initMap() {
+        var directionsService = new google.maps.DirectionsService;
+        var directionsDisplay = new google.maps.DirectionsRenderer;
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 16,
+          center: {lat: 37.7831029, lng: -122.4128189}
+        });
+        directionsDisplay.setMap(map);
+
+        var onChangeHandler = function() {
+          calculateAndDisplayRoute(directionsService, directionsDisplay);
+          displayCustomMarkers(map);
+        };
+
+        document.getElementById('start').addEventListener('change', onChangeHandler);
+        document.getElementById('end').addEventListener('change', onChangeHandler);
+        document.getElementById('travelMode').addEventListener('change', onChangeHandler);
+
+        onChangeHandler();
+      }
+
+      function displayCustomMarkers(map) {
+        var features = [
+          {
+            position: new google.maps.LatLng(37.7871362,-122.4082099),
+            icon: 'images/construction.png',
+            content: '<div id="content"><div id="bodyContent">' +
+              '<img src="images/street-construction.jpg"></div></div>'
+          },
+          {
+            position: new google.maps.LatLng(37.788501, -122.408464),
+            icon: 'images/vermin.png',
+            content: '<div id="content"><div id="bodyContent">' +
+              '<img src="images/rats.jpg"></div></div>'
+          },
+          {
+            position: new google.maps.LatLng(37.7854838, -122.4079024),
+            icon: 'images/congestion.png',
+            content: '<div id="content"><div id="bodyContent">' +
+              'busy area</div></div>'
+          },
+          {
+            position: new google.maps.LatLng(37.7856129,-122.4069471),
+            icon: 'images/crime.png',
+            content: '<div id="content"><div id="bodyContent">' +
+              'Mobile phone stolen</div></div>'
+          },
+          {
+            position: new google.maps.LatLng(37.7854071,-122.4054247),
+            icon: 'images/deserted.png',
+            content: '<div id="content"><div id="bodyContent">' +
+              'there is nobody around</div></div>'
+          },
+          {
+            position: new google.maps.LatLng(37.784633, -122.4043941),
+            icon: 'images/vagrant.png',
+            content: '<div id="content"><div id="bodyContent">' +
+              'deserving individual needing help</div></div>'
+          },
+          {
+            position: new google.maps.LatLng(37.7833299,-122.4027355),
+            icon: 'images/attraction.png',
+            content: '<div id="content"><div id="bodyContent">' +
+              'best street performance seen in a while</div></div>'
+          }
+        ];
+
+        features.forEach(function(feature) {
+          var marker = new google.maps.Marker({
+            position: feature.position,
+            icon: feature.icon,
+            map: map
+          });
+
+        var contentString = '<div id="content">'+
+          '<div id="bodyContent">'+
+          'Dog poop on sidewalk'
+          '</div>'+
+          '</div>';
+
+          var infowindow = new google.maps.InfoWindow({
+            content: feature.content
+          });
+
+          marker.addListener('click', function() {
+            infowindow.open(map, marker);
+          });
+        });
+      }
+
+      function calculateAndDisplayRoute(directionsService, directionsDisplay) {
+        directionsService.route({
+          origin: document.getElementById('start').value,
+          destination: document.getElementById('end').value,
+          travelMode: document.getElementById('travelMode').value
+        }, function(response, status) {
+          if (status === 'OK') {
+            console.log(response);
+            document.getElementById('summary').innerHTML = 'via ' + response.routes[0].summary;
+            document.getElementById('distance').innerHTML = '(' + response.routes[0].legs[0].distance.text + ')';
+            document.getElementById('duration').innerHTML = response.routes[0].legs[0].duration.text;
+            directionsDisplay.setDirections(response);
+          } else {
+            window.alert('Directions request failed due to ' + status);
+          }
+        });
+
+      }
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=<INSERT-GOOGLE-MAPS-API-KEY-HERE>&callback=initMap">
+    </script>
+  </body>
+</html>
